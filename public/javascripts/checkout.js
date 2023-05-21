@@ -14,21 +14,45 @@ const style = {
 // Handle form submission.
 const $form = $("#checkout-form");
 
+var myRedirect = function (redirectUrl, MerchantID, TerminalID, Token) {
+  var form = $(
+    '<form action="' +
+      redirectUrl +
+      '" method="post">' +
+      '<input type="hidden" name="MerchantID" value="' +
+      MerchantID +
+      '"></input>' +
+      '<input type="hidden" name="TerminalID" value="' +
+      TerminalID +
+      '"></input>' +
+      '<input type="hidden" name="Token" value="' +
+      Token +
+      '"></input>' +
+      "</form>"
+  );
+  $("body").append(form);
+  $(form).submit();
+};
+
 $form.submit(function (event) {
   console.log("OMAD");
   event.preventDefault();
   $form.find("button").prop("disabled", true);
-  Amount = parseInt($("#amount").val());
   OrderID = $("#cardId").val();
-  InvoiceNo = $("#cardId").val();
+
   axios
-    .post("http://localhost:3000", {
-      Amount,
+    .post("http://localhost:3000/pay", {
       OrderID,
-      InvoiceNo,
     })
     .then(function (response) {
-      console.log(response, "response");
+      const data = response.data.data;
+      console.log(data, "data");
+      myRedirect(
+        "https://rt.sizpay.ir/Route/Payment",
+        data.MerchantID,
+        data.TerminalID,
+        data.Token
+      );
     })
     .catch(function (error) {
       console.log(error, "error");

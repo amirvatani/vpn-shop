@@ -8,7 +8,7 @@ const Order = require("../models/order");
 const middleware = require("../middleware");
 const router = express.Router();
 
-const csrfProtection = csrf();
+const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
 router.use(csrfProtection);
 
 // GET: home page

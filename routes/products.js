@@ -3,6 +3,8 @@ const router = express.Router();
 const Product = require("../models/product");
 const Category = require("../models/category");
 var moment = require("moment");
+var url = require("url");
+const { default: axios } = require("axios");
 
 // GET: display all products
 router.get("/", async (req, res) => {

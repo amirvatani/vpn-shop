@@ -13,7 +13,7 @@ const {
   validateSignup,
   validateSignin,
 } = require("../config/validator");
-const csrfProtection = csrf();
+const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
 router.use(csrfProtection);
 
 // GET: display the signup form with csrf token

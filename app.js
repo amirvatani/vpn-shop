@@ -11,6 +11,10 @@ const flash = require("connect-flash");
 const Category = require("./models/category");
 var MongoStore = require("connect-mongo")(session);
 const connectDB = require("./config/db");
+const Cart = require("./models/cart");
+const Order = require("./models/order");
+
+var url = require("url");
 
 const app = express();
 
@@ -44,22 +48,32 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.post("/pay", (req, res) => {
-  const sizpayConfig = {
-    username: "ifMUHma6ofHLstbahr6nH3MqhGjCzVnzwuecXGwWQEA=",
-    password: "oXia//RRuffpChmhae2ed7FuOSwu7agndprF0piy8r0=",
-    back_url: "http://localhost:8081/result.html",
-    merchant_id: "500118010900011",
-    terminal_id: "18001451",
-    base_url: "https://rt.sizpay.ir/api/PaymentSimple",
-  };
+const sizpayConfig = {
+  username: "ifMUHma6ofHLstbahr6nH3MqhGjCzVnzwuecXGwWQEA=",
+  password: "oXia//RRuffpChmhae2ed7FuOSwu7agndprF0piy8r0=",
+  back_url: "http://localhost:3000/payment",
+  merchant_id: "500118010900011",
+  terminal_id: "18001451",
+  base_url: "https://rt.sizpay.ir/api/PaymentSimple",
+};
+app.post("/pay", async (req, res) => {
+  if (!req.body.OrderID) {
+    return res.status(400).json({ message: "orderId not found" });
+  }
+
+  const cart = await Cart.findOne({ _id: req.body.OrderID });
+
+  if (!cart) {
+    return res.status(400).json({ message: "orderId not found" });
+  }
+
   let varGetTokenContent = {
     Username: sizpayConfig.username,
     Password: sizpayConfig.password,
     MerchantID: sizpayConfig.merchant_id,
     TerminalID: sizpayConfig.terminal_id,
     DocDate: "",
-    ReturnURL: sizpayConfig.back_url,
+    ReturnURL: sizpayConfig.back_url + "?cartId=" + req.body.OrderID,
     ExtraInf: "",
     Amount: "0",
     OrderID: "1",
@@ -74,25 +88,23 @@ app.post("/pay", (req, res) => {
     },
     SignData: "",
   };
-  console.log(req.body, "req.body");
-  varGetTokenContent["Amount"] = JSON.stringify(req.body.Amount);
-  varGetTokenContent["OrderID"] = JSON.stringify(req.body.OrderID);
-  varGetTokenContent["InvoiceNo"] = JSON.stringify(req.body.InvoiceNo);
+  varGetTokenContent["Amount"] = parseInt(cart.totalCost);
+  varGetTokenContent["OrderID"] = req.body.OrderID;
+  varGetTokenContent["InvoiceNo"] = req.body.OrderID;
 
   console.log(varGetTokenContent, "varGetTokenContent");
-
   var options = {
     method: "POST",
-    url: sizpayConfig.base_url + "/GetTokenSimple",
+    baseURL: sizpayConfig.base_url + "/GetTokenSimple",
     headers: {
       "Content-Type": "application/json",
     },
-    body: varGetTokenContent,
+    data: varGetTokenContent,
   };
   axios(options)
     .then((wres) => {
-      console.log(wres, "wres");
-      let response = JSON.parse(wres);
+      console.log(wres.data, "wres");
+      let response = wres.data;
 
       varPayment = {
         MerchantID: sizpayConfig.merchant_id,
@@ -100,7 +112,11 @@ app.post("/pay", (req, res) => {
         Token: response.Token,
       };
 
-      if (response.ResCod == "0" || response.ResCod == "00") {
+      if (
+        response.ResCod == 0 ||
+        response.ResCod == "0" ||
+        response.ResCod == "00"
+      ) {
         return res.status(200).json({
           data: {
             method: "POST",
@@ -115,6 +131,113 @@ app.post("/pay", (req, res) => {
     .catch((e) => {
       console.log(e.response, "E");
     });
+});
+
+app.post("/payment", async (req, res) => {
+  var q = url.parse(req.url, true);
+  var filename = q.pathname;
+  var hostname = q.host;
+  var querySearch = q.search;
+  var qData = q.query;
+  var varConfirmDt = {};
+  let flagPayment = false;
+
+  if (
+    querySearch != undefined &&
+    querySearch != null &&
+    querySearch.langth > 5
+  ) {
+    let varStatus = qData.st;
+    let varMessage = qData.msg;
+    return res.status(200).json({
+      p1: varStatus,
+      p2: varMessage,
+    });
+  } else {
+    if (req.method == "POST") {
+      var post = req.body;
+
+      if (
+        post["ResCod"] == "0" ||
+        post["ResCod"] == 0 ||
+        post["ResCod"] == "00"
+      ) {
+        console.log("Payment success.");
+        flagPayment = true;
+
+        varConfirmDt["UserName"] = sizpayConfig.username;
+        varConfirmDt["Password"] = sizpayConfig.password;
+        varConfirmDt["MerchantID"] = post["MerchantID"];
+        varConfirmDt["TerminalID"] = post["TerminalID"];
+        varConfirmDt["Token"] = post["Token"];
+        varConfirmDt["SignData"] = "";
+
+        axios({
+          method: "POST",
+          baseURL: "https://rt.sizpay.ir/api/PaymentSimple" + "/ConfirmSimple",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: varConfirmDt,
+        }).then(async (wres) => {
+          let response = wres.data;
+          console.log(response, "response");
+
+          if (
+            response.ResCod == "0" ||
+            response.ResCod === 0 ||
+            response.ResCod == "00"
+          ) {
+            const cardId = req.params.cartId || req.query.cartId;
+            console.log(cardId, "cardId");
+            const card = await Cart.findOne({ _id: cardId });
+            console.log(card, "card");
+
+           
+            const order = new Order({
+              user: card.user,
+              cart: {
+                totalQty: card.totalQty,
+                totalCost: card.totalCost,
+                items: card.items,
+              },
+              paymentId: {
+                RefNo: response.RefNo,
+                Amount: response.Amount,
+                ResCod: response.ResCod,
+              },
+            });
+            order.save(async (err, newOrder) => {
+              if (err) {
+                console.log(err);
+                return res.redirect("/profile");
+              }
+              await card.save();
+              await Cart.findByIdAndDelete(card._id);
+              req.flash("success", "Successfully purchased");
+              req.session.cart = null;
+              res.redirect("/user/profile");
+            });
+          } else {
+            return res.status(200).json({
+              message: response.Message,
+              code: response.ResCod,
+            });
+          }
+        });
+      } else {
+        return res.status(200).json({
+          message: post["ResCod"],
+          code: post["Message"],
+          date: new Date().getTime(),
+        });
+      }
+    } else {
+      return res.status(200).json({
+        message: "bad method",
+      });
+    }
+  }
 });
 // global variables across routes
 app.use(async (req, res, next) => {

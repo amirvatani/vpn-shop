@@ -6,7 +6,7 @@ const {
   userContactUsValidationRules,
   validateContactUs,
 } = require("../config/validator");
-const csrfProtection = csrf();
+const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
 router.use(csrfProtection);
 
 //GET: display abous us page

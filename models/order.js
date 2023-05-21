@@ -40,21 +40,14 @@ const orderSchema = Schema({
       },
     ],
   },
-  address: {
-    type: String,
-    required: true,
-  },
   paymentId: {
-    type: String,
-    required: true,
+    RefNo: { type: Number, required: true },
+    Amount: { type: Number, required: true },
+    ResCod: { type: Number, required: true },
   },
   createdAt: {
     type: Date,
     default: Date.now,
-  },
-  Delivered: {
-    type: Boolean,
-    default: false,
   },
 });
 
