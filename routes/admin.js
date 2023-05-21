@@ -167,15 +167,6 @@ const ADMIN = {
   password: process.env.ADMIN_PASSWORD,
 };
 
-const router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
-  authenticate: async (email, password) => {
-    if (ADMIN.password === password && ADMIN.email === email) {
-      return ADMIN;
-    }
-    return null;
-  },
-  cookieName: process.env.ADMIN_COOKIE_NAME,
-  cookiePassword: process.env.ADMIN_COOKIE_PASSWORD,
-});
+const router = AdminBroExpress.buildRouter(adminBro);
 
 module.exports = router;

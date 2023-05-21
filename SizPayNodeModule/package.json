@@ -1,0 +1,21 @@
+{
+  "name": "@sizpay/SizPayNodeModule",
+  "version": "1.1.0",
+  "description": "",
+  "main": "index.js",
+  "sizpay_config": {
+    "base_url": "https://rt.sizpay.ir/api/PaymentSimple"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sizpay",
+    "siz_pay"
+  ],
+  "author": "Masoud Golmohammadi",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.2"
+  }
+}

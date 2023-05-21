@@ -75,7 +75,13 @@
   </div>
   <div class="row mt-2 mr-auto">
     <div class="col-md-11 col-sm-12 m-auto">
-      <a href="/checkout" class="btn btn-dark button-style">Checkout</a>
+      <form id="checkout-form">
+        <input type="hidden"  name="amount" id="cardId" value="<%= cart.id %>"/>
+        <input type="hidden"  name="amount" id="amount" value="<%= cart.totalCost %>"/>
+        <button id="submit-btn" type="submit" class="btn btn-dark button-style">
+          Buy now
+        </button>
+      </form>
     </div>
   </div>
   <% } else { %>
@@ -87,5 +93,8 @@
 
   <% } %>
 </div>
+
+<script type="text/javascript" src="javascripts/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <%- include ../partials/footer %>
