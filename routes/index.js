@@ -8,7 +8,7 @@ const Order = require("../models/order");
 const middleware = require("../middleware");
 const router = express.Router();
 
-const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
+const csrfProtection = csrf({ ignoreMethods: ["POST", "GET"] });
 router.use(csrfProtection);
 
 // GET: home page
@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
     const products = await Product.find({})
       .sort("-createdAt")
       .populate("category");
+
     res.render("shop/home", { pageName: "Home", products });
   } catch (error) {
     console.log(error);

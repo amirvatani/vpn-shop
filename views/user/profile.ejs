@@ -2,6 +2,79 @@
 <%- include ../partials/categories-navbar %>
 
 <div class="container">
+  <script>
+
+
+    function myFunction0(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction1(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction2(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction3(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction4(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction5(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction6(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction7(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+    
+    function myFunction8(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+
+    function myFunction9(text) {
+      var copyText = document.getElementById("connectionstring0");
+      navigator.clipboard.writeText(copyText.value);
+      alert("Copied the connection string");
+
+    }
+    </script>
   <!-- Flash messages -->
       <div class="row mt-3 mb-3">
         <div class="col-md-8 m-auto">
@@ -33,11 +106,18 @@
         <div class="card-body">
           <p class="card-text ">
             <ul class="list-group">
-              <% order.cart.items.forEach( item => { %>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <%= item.title %> | <%= item.qty %> Units
-                <span class="badge badge-info badge-pill"><%= item.price %></span>
-              </li>
+              <% order.cart.items.forEach( (item,index) => { %>
+              <div >
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <%= item.title %> | <%= item.qty %> Units 
+                  <span class="badge badge-info badge-pill"><%= item.price %></span>
+                  <input type="hidden" value="<%= item?.v2ray?.url %>" id="connectionstring<%= index %>" />
+                  <button onclick="myFunction<%= index %>()" class="btn btn-primary button-style">
+                    Copy connection string
+                  </button>
+                </li>
+           
+              </div>
               <%}) %>
             </ul>
           </p>

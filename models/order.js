@@ -37,6 +37,28 @@ const orderSchema = Schema({
         productCode: {
           type: String,
         },
+        v2ray: {
+          total: {
+            type: Number,
+            required: false,
+          },
+          remark: {
+            type: String,
+            required: false,
+          },
+          url: {
+            type: String,
+            required: false,
+          },
+          port: {
+            type: String,
+            required: false,
+          },
+          id: {
+            type: String,
+            required: false,
+          },
+        },
       },
     ],
   },

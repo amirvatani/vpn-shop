@@ -13,6 +13,10 @@ var MongoStore = require("connect-mongo")(session);
 const connectDB = require("./config/db");
 const Cart = require("./models/cart");
 const Order = require("./models/order");
+const Product = require("./models/product");
+
+const User = require("./models/user");
+const { generateVPN } = require("./utils/v2ray");
 
 var url = require("url");
 
@@ -181,7 +185,6 @@ app.post("/payment", async (req, res) => {
           data: varConfirmDt,
         }).then(async (wres) => {
           let response = wres.data;
-          console.log(response, "response");
 
           if (
             response.ResCod == "0" ||
@@ -189,17 +192,43 @@ app.post("/payment", async (req, res) => {
             response.ResCod == "00"
           ) {
             const cardId = req.params.cartId || req.query.cartId;
-            console.log(cardId, "cardId");
             const card = await Cart.findOne({ _id: cardId });
-            console.log(card, "card");
 
-           
+            const user = await User.findOne({ _id: card.user });
+
+            const mapPromises = card.items.map((item, index) => {
+              return new Promise(async (resolve) => {
+                console.log(index, "index");
+                const product = await Product.findOne({ _id: item.productId });
+                const v2ray = await generateVPN({
+                  fullName: user.username + index,
+                  amountInGB: product.amount,
+                });
+                resolve({
+                  productId: item.productId,
+                  qty: item.qty,
+                  price: item.price,
+                  title: item.title,
+                  productCode: item.productCode,
+                  v2ray: {
+                    total: v2ray.total,
+                    remark: v2ray.remark,
+                    url: v2ray.url,
+                    port: v2ray.port,
+                    id: JSON.parse(v2ray.settings).clients[0].id,
+                  },
+                });
+              });
+            });
+            console.log(mapPromises, "mapPromises");
+            const items = await Promise.all(mapPromises);
+            console.log(items, "items");
             const order = new Order({
               user: card.user,
               cart: {
                 totalQty: card.totalQty,
                 totalCost: card.totalCost,
-                items: card.items,
+                items: items,
               },
               paymentId: {
                 RefNo: response.RefNo,

@@ -194,7 +194,7 @@ async function seedDB() {
 
   async function seedProducts(titlesArr, imgsArr, categStr) {
     try {
-      const categ = await Category.findOne({ title: categStr });
+      const categ = await Category.findOne({ slug: categStr });
       for (let i = 0; i < titlesArr.length; i++) {
         let prod = new Product({
           productCode: faker.helpers.replaceSymbolWithNumber("####-##########"),
@@ -219,17 +219,8 @@ async function seedDB() {
     await mongoose.disconnect();
   }
 
-  await seedProducts(backpacks_titles, backpacks_imgs, "Backpacks");
-  await seedProducts(briefcases_titles, briefcases_imgs, "Briefcases");
-  await seedProducts(travel_titles, travel_imgs, "Travel");
-  await seedProducts(miniBags_titles, miniBags_imgs, "Mini Bags");
-  await seedProducts(
-    largeHandbags_titles,
-    largeHandbags_imgs,
-    "Large Handbags"
-  );
-  await seedProducts(purses_titles, purses_imgs, "Purses");
-  await seedProducts(totes_titles, totes_imgs, "Totes");
+  await seedProducts(purses_titles, purses_imgs, "limitless-vpn");
+  await seedProducts(totes_titles, totes_imgs, "limit-vpn");
 
   await closeDB();
 }
