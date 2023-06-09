@@ -77,10 +77,9 @@ function findLastPortAndID() {
         password: "admin",
       },
     }).then((response) => {
-      const cookie  = response.headers["set-cookie"]
-      .find((cookie) => cookie.includes("session"));
-
-      const session = cookie? cookie.match(new RegExp(`^${"session"}=(.+?);`))? cookie.match(new RegExp(`^${"session"}=(.+?);`))[1] : null : null;
+      const session = response.headers["set-cookie"]
+        .find((cookie) => cookie.includes("session"))
+        ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
 
       axios({
         baseURL: "https://a.freew3.ml:313/xui/inbound/list",
@@ -120,10 +119,9 @@ async function generateVPN({ fullName, amountInGB }) {
         password: "admin",
       },
     }).then((response) => {
-      const cookie  = response.headers["set-cookie"]
-      .find((cookie) => cookie.includes("session"));
-
-      const session = cookie? cookie.match(new RegExp(`^${"session"}=(.+?);`))? cookie.match(new RegExp(`^${"session"}=(.+?);`))[1] : null : null;
+      const session = response.headers["set-cookie"]
+        .find((cookie) => cookie.includes("session"))
+        ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
 
       axios({
         method: "POST",
