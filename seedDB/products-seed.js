@@ -205,6 +205,7 @@ async function seedDB() {
           manufacturer: faker.company.companyName(0),
           available: true,
           category: categ._id,
+          amount : 1000
         });
         await prod.save();
       }
