@@ -120,9 +120,10 @@ async function generateVPN({ fullName, amountInGB }) {
         password: "admin",
       },
     }).then((response) => {
-      const session = response.headers["set-cookie"]
-        .find((cookie) => cookie.includes("session"))
-        ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
+      const cookie  = response.headers["set-cookie"]
+      .find((cookie) => cookie.includes("session"));
+
+      const session = cookie? cookie.match(new RegExp(`^${"session"}=(.+?);`))? cookie.match(new RegExp(`^${"session"}=(.+?);`))[1] : null : null;
 
       axios({
         method: "POST",
