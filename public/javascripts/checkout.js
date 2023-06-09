@@ -41,7 +41,7 @@ $form.submit(function (event) {
   OrderID = $("#cardId").val();
 
   axios
-    .post("http://freew3.ml/pay", {
+    .post("http://freew3.ml:3000/pay", {
       OrderID,
     })
     .then(function (response) {
