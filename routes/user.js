@@ -13,7 +13,8 @@ const {
   validateSignup,
   validateSignin,
 } = require("../config/validator");
-const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
+const { getAllVPNS } = require("../utils/v2ray");
+const csrfProtection = csrf({ ignoreMethods: ["POST", "GET"] });
 router.use(csrfProtection);
 
 // GET: display the signup form with csrf token
@@ -120,7 +121,18 @@ router.get("/profile", middleware.isLoggedIn, async (req, res) => {
   const errorMsg = req.flash("error")[0];
   try {
     // find all orders of this user
+    const vpns = await getAllVPNS();
     allOrders = await Order.find({ user: req.user });
+    allOrders.forEach((order) => {
+      order.cart.items.forEach((item) => {
+        item.up = vpns.find(
+          (vpn) => parseInt(vpn.id) === parseInt(item.v2ray.uid)
+        ).up;
+        item.down = vpns.find(
+          (vpn) => parseInt(vpn.id) === parseInt(item.v2ray.uid)
+        ).down;
+      });
+    });
     res.render("user/profile", {
       orders: allOrders,
       errorMsg,

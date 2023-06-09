@@ -10,12 +10,10 @@ const orderSchema = Schema({
     totalQty: {
       type: Number,
       default: 0,
-      required: true,
     },
     totalCost: {
       type: Number,
       default: 0,
-      required: true,
     },
     items: [
       {
@@ -54,7 +52,7 @@ const orderSchema = Schema({
             type: String,
             required: false,
           },
-          id: {
+          uid: {
             type: String,
             required: false,
           },
@@ -63,9 +61,9 @@ const orderSchema = Schema({
     ],
   },
   paymentId: {
-    RefNo: { type: Number, required: true },
-    Amount: { type: Number, required: true },
-    ResCod: { type: Number, required: true },
+    RefNo: { type: Number },
+    Amount: { type: Number },
+    ResCod: { type: Number },
   },
   createdAt: {
     type: Date,
