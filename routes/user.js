@@ -127,10 +127,10 @@ router.get("/profile", middleware.isLoggedIn, async (req, res) => {
       order.cart.items.forEach((item) => {
         item.up = vpns.find(
           (vpn) => parseInt(vpn.id) === parseInt(item.v2ray.uid)
-        ).up;
+        )?.up || 0;
         item.down = vpns.find(
           (vpn) => parseInt(vpn.id) === parseInt(item.v2ray.uid)
-        ).down;
+        )?.down || 0;
       });
     });
     res.render("user/profile", {
