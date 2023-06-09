@@ -8,7 +8,7 @@ connectDB();
 async function seedDB() {
   async function seedCateg(titleStr) {
     try {
-      const categ = await new Category({ title: titleStr });
+      const categ = await new Category({ title: titleStr , slug: titleStr });
       await categ.save();
     } catch (error) {
       console.log(error);
@@ -20,13 +20,9 @@ async function seedDB() {
     console.log("CLOSING CONNECTION");
     await mongoose.disconnect();
   }
-  await seedCateg("Backpacks");
-  await seedCateg("Briefcases");
-  await seedCateg("Mini Bags");
-  await seedCateg("Large Handbags");
-  await seedCateg("Travel");
-  await seedCateg("Totes");
-  await seedCateg("Purses");
+  await seedCateg("limitless-vpn");
+  await seedCateg("limit-vpn");
+
   await closeDB();
 }
 
