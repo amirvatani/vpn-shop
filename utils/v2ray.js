@@ -77,9 +77,10 @@ function findLastPortAndID() {
         password: "admin",
       },
     }).then((response) => {
-      const session = response.headers["set-cookie"]
-        .find((cookie) => cookie.includes("session"))
-        ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
+      const cookie  = response.headers["set-cookie"]
+      .find((cookie) => cookie.includes("session"));
+
+      const session = cookie? cookie.match(new RegExp(`^${"session"}=(.+?);`))?.[1] : null;
 
       axios({
         baseURL: "https://a.freew3.ml:313/xui/inbound/list",
