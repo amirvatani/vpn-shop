@@ -1,5 +1,4 @@
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-
 const axios = require("axios");
 
 function url(port, protocol = "", uid = "", remark = "", transmission = "") {
@@ -94,23 +93,20 @@ function findLastPortAndID() {
           Referer: "https://a.freew3.ml:313/xui/inbounds",
           "Referrer-Policy": "strict-origin-when-cross-origin",
         },
-      }).then((result) => {
+      }).then(async (result) => {
         const item = result.data.obj[result.data.obj.length - 1];
 
         resolve({
           id: JSON.parse(item.settings).clients[0].id,
-          nextPort: 10356 + item.id,
+          nextPort: getNextPort(),
         });
       });
     });
   });
 }
 
-async function generateVPN({ fullName, amountInGB }) {
-  return new Promise(async (resolve) => {
-    const uniqueRemark = fullName + new Date().getTime();
-    const lastInformation = await findLastPortAndID({});
-
+function getAllVPNS() {
+  return new Promise((resolve) => {
     axios({
       method: "POST",
       baseURL: "https://a.freew3.ml:313/login",
@@ -124,6 +120,61 @@ async function generateVPN({ fullName, amountInGB }) {
         ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
 
       axios({
+        baseURL: "https://a.freew3.ml:313/xui/inbound/list",
+        method: "POST",
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language":
+            "en-GB,en;q=0.9,fa-IR;q=0.8,fa;q=0.7,de-DE;q=0.6,de;q=0.5,en-US;q=0.4",
+          "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+          "x-requested-with": "XMLHttpRequest",
+          cookie: "session=" + session,
+          Referer: "https://a.freew3.ml:313/xui/inbounds",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+        },
+      }).then(async (result) => {
+        resolve(result.data.obj);
+      });
+    });
+  });
+}
+
+function getNextPort() {
+  const minPort = 33000;
+  const maxPort = 55000;
+  return Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
+}
+
+async function generateVPN({ fullName, amountInGB }) {
+  console.log(
+    "🚀 ~ file: v2ray.js:110 ~ generateVPN ~ { fullName, amountInGB }:",
+    { fullName, amountInGB }
+  );
+  return new Promise(async (resolve) => {
+    const uniqueRemark = fullName + new Date().getTime();
+    const lastInformation = await findLastPortAndID({});
+    console.log(
+      "🚀 ~ file: v2ray.js:113 ~ returnnewPromise ~ lastInformation:",
+      lastInformation
+    );
+
+    axios({
+      method: "POST",
+      baseURL: "https://a.freew3.ml:313/login",
+      data: {
+        username: "admin",
+        password: "admin",
+      },
+    }).then((response) => {
+      const session = response.headers["set-cookie"]
+        .find((cookie) => cookie.includes("session"))
+        ?.match(new RegExp(`^${"session"}=(.+?);`))?.[1];
+      console.log(
+        "🚀 ~ file: v2ray.js:126 ~ returnnewPromise ~ session:",
+        session
+      );
+
+      axios({
         method: "POST",
         data:
           "up=0&down=0&total=" +
@@ -132,7 +183,6 @@ async function generateVPN({ fullName, amountInGB }) {
           uniqueRemark +
           "&enable=true&expiryTime=0&listen=&port=" +
           lastInformation.nextPort +
-          1 +
           "&protocol=vmess&settings=%7B%0A%20%20%22clients%22%3A%20%5B%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%22id%22%3A%20%223f7105c2-8b57-413b-f14b-59004387bcc4%22%2C%0A%20%20%20%20%20%20%22alterId%22%3A%200%0A%20%20%20%20%7D%0A%20%20%5D%2C%0A%20%20%22disableInsecureEncryption%22%3A%20false%0A%7D&streamSettings=%7B%0A%20%20%22network%22%3A%20%22ws%22%2C%0A%20%20%22security%22%3A%20%22tls%22%2C%0A%20%20%22tlsSettings%22%3A%20%7B%0A%20%20%20%20%22serverName%22%3A%20%22a.freew3.ml%22%2C%0A%20%20%20%20%22certificates%22%3A%20%5B%0A%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%22certificateFile%22%3A%20%22%2Fetc%2Fletsencrypt%2Flive%2Fa.freew3.ml%2Ffullchain.pem%22%2C%0A%20%20%20%20%20%20%20%20%22keyFile%22%3A%20%22%2Fetc%2Fletsencrypt%2Flive%2Fa.freew3.ml%2Fprivkey.pem%22%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%5D%0A%20%20%7D%2C%0A%20%20%22wsSettings%22%3A%20%7B%0A%20%20%20%20%22path%22%3A%20%22%2F%22%2C%0A%20%20%20%20%22headers%22%3A%20%7B%7D%0A%20%20%7D%0A%7D&sniffing=%7B%0A%20%20%22enabled%22%3A%20true%2C%0A%20%20%22destOverride%22%3A%20%5B%0A%20%20%20%20%22http%22%2C%0A%20%20%20%20%22tls%22%0A%20%20%5D%0A%7D",
         headers: {
           accept: "application/json, text/plain, */*",
@@ -147,6 +197,7 @@ async function generateVPN({ fullName, amountInGB }) {
         baseURL: "https://a.freew3.ml:313/xui/inbound/add",
       })
         .then(async (result) => {
+          console.log("🚀 ~ file: v2ray.js:153 ~ .then ~ result:", result);
           if (!result.data.success) {
             if (result.data?.msg?.includes("添加失败: 端口已存在")) {
               resolve(
@@ -176,6 +227,7 @@ async function generateVPN({ fullName, amountInGB }) {
             const item = result.data.obj.find(
               (item) => item.remark === uniqueRemark
             );
+            console.log("🚀 ~ file: v2ray.js:183 ~ .then ~ item:", item);
             if (item) {
               console.log({
                 ...item,
@@ -207,4 +259,4 @@ async function generateVPN({ fullName, amountInGB }) {
   });
 }
 
-module.exports = { generateVPN };
+module.exports = { generateVPN, getAllVPNS };

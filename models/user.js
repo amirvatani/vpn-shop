@@ -15,6 +15,13 @@ const userSchema = Schema({
     type: String,
     require: true,
   },
+  refCode: {
+    type: String,
+    require: true,
+  },
+  invitedFromCode: {
+    type: String,
+  },
 });
 
 // encrypt the password before storing

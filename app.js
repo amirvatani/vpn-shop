@@ -14,6 +14,7 @@ const connectDB = require("./config/db");
 const Cart = require("./models/cart");
 const Order = require("./models/order");
 const Product = require("./models/product");
+const nodemailer = require("nodemailer");
 
 const User = require("./models/user");
 const { generateVPN } = require("./utils/v2ray");
@@ -137,6 +138,17 @@ app.post("/pay", async (req, res) => {
     });
 });
 
+const smtpTrans = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    // company's email and password
+    user: "shakewellagency@gmail.com",
+    pass: "lmfrhaoxdrdvvoun",
+  },
+  requireTLS: true,
+});
 app.post("/payment", async (req, res) => {
   var q = url.parse(req.url, true);
   var filename = q.pathname;
@@ -204,6 +216,26 @@ app.post("/payment", async (req, res) => {
                   fullName: user.username + index,
                   amountInGB: product.amount,
                 });
+                console.log(v2ray);
+
+                // email options
+                const mailOpts = {
+                  from: "shakewellagency@gmail.com",
+                  to: user.email,
+                  subject: `Enquiry from ${req.body.name}`,
+                  html: `
+                  <div>
+                  <h3 style="color: #478ba2;">here is your new VPN account: (${v2ray.url})<h3>
+                  </br>
+                  <h3 style="color: black;">${v2ray.url}<h3>
+
+                  </div>
+                
+                  `,
+                };
+
+                // send the email
+                smtpTrans.sendMail(mailOpts);
                 resolve({
                   productId: item.productId,
                   qty: item.qty,
@@ -215,7 +247,7 @@ app.post("/payment", async (req, res) => {
                     remark: v2ray.remark,
                     url: v2ray.url,
                     port: v2ray.port,
-                    id: JSON.parse(v2ray.settings).clients[0].id,
+                    uid: v2ray.id,
                   },
                 });
               });
@@ -236,6 +268,7 @@ app.post("/payment", async (req, res) => {
                 ResCod: response.ResCod,
               },
             });
+            const ordersOfUser = await Order.find({ user: user._id });
             order.save(async (err, newOrder) => {
               if (err) {
                 console.log(err);
@@ -246,6 +279,63 @@ app.post("/payment", async (req, res) => {
               req.flash("success", "Successfully purchased");
               req.session.cart = null;
               res.redirect("/user/profile");
+
+              if (user.invitedFromCode) {
+                const inviter = await User.findOne({
+                  refCode: user.invitedFromCode,
+                });
+
+                if (inviter && !ordersOfUser.length) {
+                  const v2ray = await generateVPN({
+                    fullName: inviter.username,
+                    amountInGB: 5,
+                  });
+                  const order = new Order({
+                    user: inviter._id,
+                    cart: {
+                      totalQty: 1,
+                      totalCost: 0,
+                      items: [
+                        {
+                          productId: null,
+                          qty: 1,
+                          price: 0,
+                          title: " هدیه دعوت از" + user.username,
+                          productCode: null,
+                          v2ray: {
+                            total: v2ray.total,
+                            remark: v2ray.remark,
+                            url: v2ray.url,
+                            port: v2ray.port,
+                            uid: v2ray.id,
+                          },
+                        },
+                      ],
+                    },
+                    paymentId: null,
+                  });
+                  await order.save();
+                  console.log(v2ray);
+
+                  // email options
+                  const mailOpts = {
+                    from: "shakewellagency@gmail.com",
+                    to: inviter.email,
+                    subject: `Enquiry from ${user.username}`,
+                    html: `
+                    <div>
+                    <h3 style="color: #478ba2;">5 Gig account as appreciate of inviting your friends: <h3>
+                    </br>
+                    <h3 style="color: black;">${v2ray.url}<h3>
+      
+                    </div>
+                  
+                    `,
+                  };
+                  // send the email
+                  smtpTrans.sendMail(mailOpts);
+                }
+              }
             });
           } else {
             return res.status(200).json({

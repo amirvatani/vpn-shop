@@ -6,7 +6,7 @@ const {
   userContactUsValidationRules,
   validateContactUs,
 } = require("../config/validator");
-const csrfProtection = csrf({ignoreMethods:["POST","GET"]});
+const csrfProtection = csrf({ ignoreMethods: ["POST", "GET"] });
 router.use(csrfProtection);
 
 //GET: display abous us page
@@ -54,12 +54,10 @@ router.post(
       secure: false,
       auth: {
         // company's email and password
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_PASSWORD,
+        user: "shakewellagency@gmail.com",
+        pass: "lmfrhaoxdrdvvoun",
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
+      requireTLS: true,
     });
 
     // email options
@@ -82,6 +80,7 @@ router.post(
     // send the email
     smtpTrans.sendMail(mailOpts, (error, response) => {
       if (error) {
+        console.log(error);
         req.flash(
           "error",
           "An error occured... Please check your internet connection and try again later"
