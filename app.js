@@ -55,7 +55,7 @@ app.use(passport.session());
 const sizpayConfig = {
   username: "ifMUHma6ofHLstbahr6nH3MqhGjCzVnzwuecXGwWQEA=",
   password: "oXia//RRuffpChmhae2ed7FuOSwu7agndprF0piy8r0=",
-  back_url: "http://localhost:3000/payment",
+  back_url: "http://freew3.ml:3000/payment",
   merchant_id: "500118010900011",
   terminal_id: "18001451",
   base_url: "https://rt.sizpay.ir/api/PaymentSimple",
